@@ -1,0 +1,6 @@
+/ {
+    aliases {
+            adxl372 = &adxl372;
+            adxl362 = &adxl362;
+    };
+};
