@@ -39,12 +39,12 @@ static void trigger_handler(const struct device *dev,
 	case SENSOR_TRIG_MOTION:
 	{
 		printk("SENSOR_TRIG_MOTION\n");
-		if (sensor_sample_fetch(dev) < 0)
-		{
-			printk("Sample fetch error\n");
-			return;
-		}
-		k_sem_give(&sem);
+		break;
+	}
+
+	case SENSOR_TRIG_STATIONARY:
+	{
+		printk("SENSOR_TRIG_STATIONARY\n");
 		break;
 	}
 
@@ -68,8 +68,6 @@ void main(void)
 		printk("sensor: device %s ready.\n", adxl1362_sens->name);
 	}
 
-
-
 	if (IS_ENABLED(CONFIG_ADXL362_TRIGGER))
 	{
 		struct sensor_trigger trig = {.chan = SENSOR_CHAN_ACCEL_XYZ};
@@ -84,6 +82,12 @@ void main(void)
 		if (sensor_trigger_set(adxl1362_sens, &trig, trigger_handler))
 		{
 			printk("SENSOR_TRIG_MOTION set error\n");
+		}
+
+		trig.type = SENSOR_TRIG_STATIONARY;
+		if (sensor_trigger_set(adxl1362_sens, &trig, trigger_handler))
+		{
+			printk("SENSOR_TRIG_STATIONARY set error\n");
 		}
 	}
 
