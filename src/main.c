@@ -5,11 +5,9 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/sensor.h>
 
-
 #define LOG_LEVEL CONFIG_LOG_DEFAULT_LEVEL
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(main);
-
 
 struct sensor_value data[3];
 
@@ -48,10 +46,7 @@ BUILD_ASSERT(DT_NODE_HAS_STATUS(DEFAULT_ADXL362_NODE, okay),
 // DEVICE TREE STRUCTURE
 const struct device *adxl1362_sens = DEVICE_DT_GET(DEFAULT_ADXL362_NODE);
 
-
 static int ext_sensors_accelerometer_threshold_set(double threshold, bool upper);
-
-
 
 static void trigger_handler(const struct device *dev, const struct sensor_trigger *trig)
 {
