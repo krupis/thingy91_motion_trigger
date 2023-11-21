@@ -103,7 +103,7 @@ static void trigger_handler(const struct device *dev, const struct sensor_trigge
 	}
 
 	default:
-		printk("Unknown trigger\n");
+		printk("Unknown trigger %u \n", (trig->type));
 	}
 }
 
