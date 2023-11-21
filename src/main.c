@@ -20,6 +20,11 @@ BUILD_ASSERT(DT_NODE_HAS_STATUS(DEFAULT_ADXL362_NODE, okay),
 // DEVICE TREE STRUCTURE
 const struct device *adxl1362_sens = DEVICE_DT_GET(DEFAULT_ADXL362_NODE);
 
+
+static int ext_sensors_accelerometer_threshold_set(double threshold, bool upper)
+
+
+
 static void trigger_handler(const struct device *dev,
 							const struct sensor_trigger *trig)
 {
@@ -108,4 +113,62 @@ void main(void)
 			   sensor_value_to_double(&accel[1]),
 			   sensor_value_to_double(&accel[2]));
 	}
+}
+
+
+
+
+
+
+
+
+static int ext_sensors_accelerometer_threshold_set(double threshold, bool upper)
+{
+	int err, input_value;
+	double range_max_m_s2 = ADXL362_RANGE_MAX_M_S2;
+
+	if ((threshold > range_max_m_s2) || (threshold <= 0.0))
+	{
+		LOG_ERR("Invalid %s threshold value: %f", upper ? "activity" : "inactivity", threshold);
+		return -ENOTSUP;
+	}
+
+	/* Convert threshold value into 11-bit decimal value relative
+	 * to the configured measuring range of the accelerometer.
+	 */
+	threshold = (threshold *
+				 (ADXL362_THRESHOLD_RESOLUTION_DECIMAL_MAX / range_max_m_s2));
+
+	/* Add 0.5 to ensure proper conversion from double to int. */
+	threshold = threshold + 0.5;
+	input_value = (int)threshold;
+
+	if (input_value >= ADXL362_THRESHOLD_RESOLUTION_DECIMAL_MAX)
+	{
+		input_value = ADXL362_THRESHOLD_RESOLUTION_DECIMAL_MAX - 1;
+	}
+	else if (input_value < 0)
+	{
+		input_value = 0;
+	}
+
+	const struct sensor_value data = {
+		.val1 = input_value};
+
+	enum sensor_attribute attr = upper ? SENSOR_ATTR_UPPER_THRESH : SENSOR_ATTR_LOWER_THRESH;
+
+	/* SENSOR_CHAN_ACCEL_XYZ is not supported by the driver in this case. */
+	err = sensor_attr_set(adxl1362_sens,
+						  SENSOR_CHAN_ACCEL_X,
+						  attr,
+						  &data);
+	if (err)
+	{
+		LOG_ERR("Failed to set accelerometer threshold value");
+		LOG_ERR("Device: %s, error: %d",
+				adxl1362_sens->name, err);
+
+		return err;
+	}
+	return 0;
 }
