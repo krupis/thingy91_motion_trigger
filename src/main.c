@@ -55,41 +55,18 @@ static void trigger_handler(const struct device *dev, const struct sensor_trigge
 	{
 
 	case SENSOR_TRIG_MOTION:
-	{
-		if (sensor_sample_fetch(dev) < 0)
-		{
-			printk("Sample fetch error \n");
-			return;
-		}
-
-		err = sensor_channel_get(dev, SENSOR_CHAN_ACCEL_XYZ, &data[0]);
-		if (err)
-		{
-			printk("sensor_channel_get, error: %d \n", err);
-			return;
-		}
-
-		printk("x: %.1f, y: %.1f, z: %.1f (m/s^2)\n",
-			   sensor_value_to_double(&data[0]),
-			   sensor_value_to_double(&data[1]),
-			   sensor_value_to_double(&data[2]));
-
-		printk("Inactivity detected\n");
-		break;
-	}
-
 	case SENSOR_TRIG_STATIONARY:
-	{
+
 		if (sensor_sample_fetch(dev) < 0)
 		{
-			printk("Sample fetch error \n");
+			LOG_ERR("Sample fetch error");
 			return;
 		}
 
 		err = sensor_channel_get(dev, SENSOR_CHAN_ACCEL_XYZ, &data[0]);
 		if (err)
 		{
-			printk("sensor_channel_get, error: %d \n", err);
+			LOG_ERR("sensor_channel_get, error: %d", err);
 			return;
 		}
 
@@ -98,12 +75,18 @@ static void trigger_handler(const struct device *dev, const struct sensor_trigge
 			   sensor_value_to_double(&data[1]),
 			   sensor_value_to_double(&data[2]));
 
-		printk("Activity detected\n");
-		break;
-	}
+		if (trig->type == SENSOR_TRIG_MOTION)
+		{
+			LOG_DBG("Activity detected");
+		}
+		else
+		{
+			LOG_DBG("Inactivity detected");
+		}
 
+		break;
 	default:
-		printk("Unknown trigger %u \n", (trig->type));
+		LOG_ERR("Unknown trigger: %d", trig->type);
 	}
 }
 
@@ -116,7 +99,7 @@ void main(void)
 		return 0;
 	}
 
-	ext_sensors_accelerometer_threshold_set(3, true);
+	ext_sensors_accelerometer_threshold_set(5.0, true);
 	ext_sensors_accelerometer_threshold_set(0.5, false);
 
 	if (IS_ENABLED(CONFIG_ADXL362_TRIGGER))
@@ -176,6 +159,8 @@ static int ext_sensors_accelerometer_threshold_set(double threshold, bool upper)
 		.val1 = input_value};
 
 	enum sensor_attribute attr = upper ? SENSOR_ATTR_UPPER_THRESH : SENSOR_ATTR_LOWER_THRESH;
+
+	printf("threshold value to be set : %d\n", data.val1);
 
 	/* SENSOR_CHAN_ACCEL_XYZ is not supported by the driver in this case. */
 	err = sensor_attr_set(adxl1362_sens,
