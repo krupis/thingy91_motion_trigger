@@ -86,6 +86,7 @@ static void trigger_handler(const struct device *dev, const struct sensor_trigge
 		}
 
 		break;
+		
 	default:
 		LOG_ERR("Unknown trigger: %d", trig->type);
 	}
