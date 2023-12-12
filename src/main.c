@@ -45,8 +45,9 @@ BUILD_ASSERT(DT_NODE_HAS_STATUS(DEFAULT_ADXL362_NODE, okay),
 
 // DEVICE TREE STRUCTURE
 const struct device *adxl1362_sens = DEVICE_DT_GET(DEFAULT_ADXL362_NODE);
-
 static int ext_sensors_accelerometer_threshold_set(double threshold, bool upper);
+
+
 
 static void trigger_handler(const struct device *dev, const struct sensor_trigger *trig)
 {
@@ -77,11 +78,11 @@ static void trigger_handler(const struct device *dev, const struct sensor_trigge
 
 		if (trig->type == SENSOR_TRIG_MOTION)
 		{
-			LOG_DBG("Activity detected");
+			LOG_INF("Activity detected");
 		}
 		else
 		{
-			LOG_DBG("Inactivity detected");
+			LOG_INF("Inactivity detected");
 		}
 
 		break;
@@ -89,7 +90,6 @@ static void trigger_handler(const struct device *dev, const struct sensor_trigge
 		LOG_ERR("Unknown trigger: %d", trig->type);
 	}
 }
-
 void main(void)
 {
 
@@ -98,9 +98,6 @@ void main(void)
 		printk("sensor: device %s not ready.\n", adxl1362_sens->name);
 		return 0;
 	}
-
-	ext_sensors_accelerometer_threshold_set(5.0, true);
-	ext_sensors_accelerometer_threshold_set(0.5, false);
 
 	if (IS_ENABLED(CONFIG_ADXL362_TRIGGER))
 	{
@@ -122,6 +119,9 @@ void main(void)
 		{
 			printk("SENSOR_TRIG_STATIONARY set error\n");
 		}
+
+		ext_sensors_accelerometer_threshold_set(10.0, true);
+		ext_sensors_accelerometer_threshold_set(1.5, false);
 	}
 }
 
@@ -160,7 +160,7 @@ static int ext_sensors_accelerometer_threshold_set(double threshold, bool upper)
 
 	enum sensor_attribute attr = upper ? SENSOR_ATTR_UPPER_THRESH : SENSOR_ATTR_LOWER_THRESH;
 
-	printf("threshold value to be set : %d\n", data.val1);
+	LOG_INF("threshold value to be set : %d\n", data.val1);
 
 	/* SENSOR_CHAN_ACCEL_XYZ is not supported by the driver in this case. */
 	err = sensor_attr_set(adxl1362_sens,
