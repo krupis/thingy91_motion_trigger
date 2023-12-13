@@ -95,20 +95,20 @@ void main(void)
 
 	if (!device_is_ready(adxl1362_sens))
 	{
-		printk("sensor: device %s not ready.\n", adxl1362_sens->name);
+		LOG_ERR("sensor: device %s not ready", adxl1362_sens->name);
 		return 0;
 	}
 
 	if (IS_ENABLED(CONFIG_ADXL362_TRIGGER))
 	{
-		printk("Configuring triggers\n");
+		LOG_DBG("Configuring triggers");
 		struct sensor_trigger trig_motion = {
 			.chan = SENSOR_CHAN_ACCEL_XYZ,
 			.type = SENSOR_TRIG_MOTION,
 		};
 		if (sensor_trigger_set(adxl1362_sens, &trig_motion, trigger_handler))
 		{
-			printk("SENSOR_TRIG_MOTION set error\n");
+			LOG_ERR("SENSOR_TRIG_MOTION set error");
 		}
 
 		struct sensor_trigger trig_stationary = {
@@ -117,7 +117,7 @@ void main(void)
 		};
 		if (sensor_trigger_set(adxl1362_sens, &trig_stationary, trigger_handler))
 		{
-			printk("SENSOR_TRIG_STATIONARY set error\n");
+			LOG_ERR("SENSOR_TRIG_STATIONARY set error");
 		}
 		ext_sensors_accelerometer_threshold_set(5.0, true);
 		ext_sensors_accelerometer_threshold_set(0.5, false);
@@ -159,7 +159,7 @@ static int ext_sensors_accelerometer_threshold_set(double threshold, bool upper)
 
 	enum sensor_attribute attr = upper ? SENSOR_ATTR_UPPER_THRESH : SENSOR_ATTR_LOWER_THRESH;
 
-	printf("threshold value to be set : %d\n", data.val1);
+	LOG_DBG("threshold value to be set : %d", data.val1);
 
 	/* SENSOR_CHAN_ACCEL_XYZ is not supported by the driver in this case. */
 	err = sensor_attr_set(adxl1362_sens,
