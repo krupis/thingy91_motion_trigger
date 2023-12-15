@@ -3,7 +3,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/spi.h>
 #include <zephyr/device.h>
-#include <zephyr/drivers/sensor.h>
+#include <zephyr/drivers/sensor.h>a
 
 #define LOG_LEVEL 4
 #include <zephyr/logging/log.h>
@@ -70,18 +70,18 @@ static void trigger_handler(const struct device *dev, const struct sensor_trigge
 			return;
 		}
 
-		printk("x: %.1f, y: %.1f, z: %.1f (m/s^2)\n",
+		LOG_DBG("x: %.1f, y: %.1f, z: %.1f (m/s^2)",
 			   sensor_value_to_double(&data[0]),
 			   sensor_value_to_double(&data[1]),
 			   sensor_value_to_double(&data[2]));
 
 		if (trig->type == SENSOR_TRIG_MOTION)
 		{
-			LOG_DBG("Activity detected");
+			LOG_DBG("Activity detected \n");
 		}
 		else
 		{
-			LOG_DBG("Inactivity detected");
+			LOG_DBG("Inactivity detected \n");
 		}
 
 		break;
@@ -101,7 +101,7 @@ void main(void)
 
 	if (IS_ENABLED(CONFIG_ADXL362_TRIGGER))
 	{
-		LOG_DBG("Configuring triggers");
+		LOG_DBG("Configuring triggers \n");
 		struct sensor_trigger trig_motion = {
 			.chan = SENSOR_CHAN_ACCEL_XYZ,
 			.type = SENSOR_TRIG_MOTION,
@@ -159,7 +159,7 @@ static int ext_sensors_accelerometer_threshold_set(double threshold, bool upper)
 
 	enum sensor_attribute attr = upper ? SENSOR_ATTR_UPPER_THRESH : SENSOR_ATTR_LOWER_THRESH;
 
-	LOG_DBG("threshold value to be set : %d", data.val1);
+	LOG_DBG("threshold value to be set : %d \n", data.val1);
 
 	/* SENSOR_CHAN_ACCEL_XYZ is not supported by the driver in this case. */
 	err = sensor_attr_set(adxl1362_sens,
